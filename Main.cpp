@@ -21,10 +21,10 @@
 #include "BaseProtocol.h"
 #include <util/atomic.h>
 
+//#define ENABLE_SERIAL
+
 const uint16_t hopper_threshold = 20;
 uint16_t measurement[2];
-
-//#define ENABLE_SERIAL
 
 struct Commands {
   enum {
