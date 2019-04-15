@@ -1,3 +1,4 @@
+#pragma once
 /*
  * Copyright (C) 2017 3devo (http://3devo.eu)
  *
