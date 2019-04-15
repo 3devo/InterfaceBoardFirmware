@@ -17,27 +17,27 @@
 
 #include "Arduino.h"
 
-static const int H_Led = PIN_A7;
-static const int H_Sens = PIN_A1;
-static const int H_Sens_ADC_Channel = 1;
+static const uint8_t H_Led = PIN_A7;
+static const uint8_t H_Sens = PIN_A1;
+static const uint8_t H_Sens_ADC_Channel = 1;
 static_assert(analogInputToDigitalPin(H_Sens_ADC_Channel) == H_Sens, "Hopper sensor ADC channel mismatch");
-static const int H_Out = PIN_A0;
+static const uint8_t H_Out = PIN_A0;
 
-static const int EN_Boost = PIN_A3;
-static const int EN_3V3 = PIN_A2;
-static const int RES_Display = PIN_B0;
+static const uint8_t EN_Boost = PIN_A3;
+static const uint8_t EN_3V3 = PIN_A2;
+static const uint8_t RES_Display = PIN_B0;
 
-static const int ENC_B = PIN_B1;
-static const int ENC_A = PIN_B2;
-static const int ENC_SW = PIN_A5;
+static const uint8_t ENC_B = PIN_B1;
+static const uint8_t ENC_A = PIN_B2;
+static const uint8_t ENC_SW = PIN_A5;
 
-static const int SCL = PIN_A4;
-static const int SDA = PIN_A6;
+static const uint8_t SCL = PIN_A4;
+static const uint8_t SDA = PIN_A6;
 
-static const int LED_ON = HIGH;
-static const int LED_OFF = LOW;
+static const bool LED_ON = HIGH;
+static const bool LED_OFF = LOW;
 
-static const int HOPPER_FULL = HIGH;
-static const int HOPPER_EMPTY = LOW;
+static const bool HOPPER_FULL = HIGH;
+static const bool HOPPER_EMPTY = LOW;
 
 static const uint8_t I2C_ADDRESS = 8;
