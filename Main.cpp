@@ -34,7 +34,7 @@ struct Commands {
 
 cmd_result processCommand(uint8_t cmd, uint8_t * /*datain*/, uint8_t len, uint8_t *dataout, uint8_t maxLen) {
   switch (cmd) {
-    case Commands::GET_LAST_MEASUREMENT:
+    case Commands::GET_LAST_MEASUREMENT: {
       if (len != 0 || maxLen < 4)
         return cmd_result(Status::INVALID_ARGUMENTS);
       dataout[0] = measurement[0] >> 8;
@@ -42,13 +42,13 @@ cmd_result processCommand(uint8_t cmd, uint8_t * /*datain*/, uint8_t len, uint8_
       dataout[2] = measurement[1] >> 8;
       dataout[3] = measurement[1];
       return cmd_result(Status::COMMAND_OK, 4);
+    }
     default:
       return cmd_result(Status::COMMAND_NOT_SUPPORTED);
   }
 }
 
-void start_display()
-{
+void start_display() {
   // This pin has a pullup to 3v3, so the display comes out of
   // reset as soon as the 3v3 is powered up. To prevent that, pull
   // it low now.
@@ -73,13 +73,12 @@ void start_display()
 
   delay(5);
 
-  #ifdef ENABLE_SERIAL
+#ifdef ENABLE_SERIAL
   Serial.println("Display turned on");
-  #endif
+#endif
 }
 
-void measure_hopper()
-{
+void measure_hopper() {
 #ifndef ENABLE_SERIAL // Serial reuses the H_sens pin
   digitalWrite(H_Led, LED_ON);
   delay(10);
@@ -104,25 +103,23 @@ void measure_hopper()
 }
 
 
-void setup()
-{
-  #ifdef ENABLE_SERIAL
+void setup() {
+#ifdef ENABLE_SERIAL
   Serial.begin(1000000);
   Serial.println("Starting");
-  #endif
+#endif
 
   pinMode(H_Led, OUTPUT);
   pinMode(H_Out, OUTPUT);
-  #ifndef ENABLE_SERIAL // Serial reuses the H_sens pin
+#ifndef ENABLE_SERIAL // Serial reuses the H_sens pin
   pinMode(H_Sens, INPUT);
-  #endif
+#endif
 
   TwoWireInit(/* useInterrupts */ true, I2C_ADDRESS);
 
   start_display();
 }
 
-void loop()
-{
+void loop() {
   measure_hopper();
 }
