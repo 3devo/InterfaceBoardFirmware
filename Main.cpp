@@ -20,17 +20,29 @@
 #include "TwoWire.h"
 #include "BaseProtocol.h"
 #include <util/atomic.h>
+#include "ButtonEncoder.h"
 
 //#define ENABLE_SERIAL
 
+static bool hopper_empty = false;
 const uint16_t hopper_threshold = 20;
 uint16_t measurement[2];
+ButtonEncoder<ENC_SW, ENC_A, ENC_B> encoder;
 
 struct Commands {
   enum {
     GET_LAST_MEASUREMENT = 0x80,
+    GET_LAST_STATUS = 0x81,
   };
 };
+
+void assert_interrupt_pin() {
+  digitalWrite(STATUS_PIN, HIGH);
+}
+
+void clear_interrupt_pin() {
+  digitalWrite(STATUS_PIN, LOW);
+}
 
 cmd_result processCommand(uint8_t cmd, uint8_t * /*datain*/, uint8_t len, uint8_t *dataout, uint8_t maxLen) {
   switch (cmd) {
@@ -42,6 +54,28 @@ cmd_result processCommand(uint8_t cmd, uint8_t * /*datain*/, uint8_t len, uint8_
       dataout[2] = measurement[1] >> 8;
       dataout[3] = measurement[1];
       return cmd_result(Status::COMMAND_OK, 4);
+    }
+    case Commands::GET_LAST_STATUS: {
+      if (len != 0 || maxLen < 2)
+        return cmd_result(Status::INVALID_ARGUMENTS);
+
+      // Note that we run inside an I2c interrupt, so there is no race condition here
+      clear_interrupt_pin();
+
+      // Process the encoder result and keep the hopper sensor bit cleared, just to be sure.
+      uint8_t button_presses = encoder.process_button();
+      int8_t encoder_detents = encoder.process_encoder();
+      
+      // Truncate buttonpresses to keep bit 8 free for hopper sensor
+      dataout[0] = min(0x7F, button_presses);
+   
+      // Check if there is anything before the hopper sensor
+      if (hopper_empty)
+        dataout[0] |= 0x80;
+
+      dataout[1] = encoder_detents;
+
+      return cmd_result(Status::COMMAND_OK, 2);
     }
     default:
       return cmd_result(Status::COMMAND_NOT_SUPPORTED);
@@ -96,10 +130,16 @@ void measure_hopper() {
 
   // Lower reading means more light
   if (on < off && (off - on) > hopper_threshold)
-    digitalWrite(H_Out, HOPPER_EMPTY);
+    hopper_empty = HOPPER_FULL;
   else
-    digitalWrite(H_Out, HOPPER_FULL);
-#endif
+    hopper_empty = HOPPER_EMPTY;
+
+  static bool previous_hopper_empty = false;
+  if(hopper_empty != previous_hopper_empty) {
+    previous_hopper_empty = hopper_empty;
+    assert_interrupt_pin();
+  }
+#endif /*ENABLE_SERIAL*/
 }
 
 
@@ -110,12 +150,18 @@ void setup() {
 #endif
 
   pinMode(H_Led, OUTPUT);
-  pinMode(H_Out, OUTPUT);
+
+  pinMode(STATUS_PIN, OUTPUT);
+
 #ifndef ENABLE_SERIAL // Serial reuses the H_sens pin
   pinMode(H_Sens, INPUT);
 #endif
 
+  pinMode(H_Sens_ADC_Channel, INPUT);
+
   TwoWireInit(/* useInterrupts */ true, I2C_ADDRESS);
+
+  encoder.setup();
 
   start_display();
 }
