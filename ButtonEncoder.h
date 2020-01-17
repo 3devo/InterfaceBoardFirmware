@@ -94,7 +94,7 @@ class ButtonEncoder {
   public:
     void setup(void) {
       // These have external pullups
-      pinMode(button_pin, INPUT_PULLUP /* TEMPORARY with PULLUP! */);
+      pinMode(button_pin, INPUT);
       pinMode(pina, INPUT);
       pinMode(pinb, INPUT);
 
