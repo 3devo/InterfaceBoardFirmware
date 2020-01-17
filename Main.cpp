@@ -65,10 +65,10 @@ cmd_result processCommand(uint8_t cmd, uint8_t * /*datain*/, uint8_t len, uint8_
       // Process the encoder result and keep the hopper sensor bit cleared, just to be sure.
       uint8_t button_presses = encoder.process_button();
       int8_t encoder_detents = encoder.process_encoder();
-      
+
       // Truncate buttonpresses to keep bit 8 free for hopper sensor
       dataout[0] = min(0x7F, button_presses);
-   
+
       // Check if there is anything before the hopper sensor
       if (hopper_empty)
         dataout[0] |= 0x80;

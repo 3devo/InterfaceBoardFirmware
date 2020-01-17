@@ -72,8 +72,5 @@ int TwoWireCallback(uint8_t address, uint8_t *data, uint8_t len, uint8_t maxLen)
 	data[len] = calcCrc(data, len);
 	++len;
 
-
 	return len;
 }
-
-
