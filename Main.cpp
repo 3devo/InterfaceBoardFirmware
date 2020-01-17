@@ -157,8 +157,6 @@ void setup() {
   pinMode(H_Sens, INPUT);
 #endif
 
-  pinMode(H_Sens_ADC_Channel, INPUT);
-
   TwoWireInit(/* useInterrupts */ true, I2C_ADDRESS);
 
   encoder.setup();
