@@ -29,45 +29,45 @@ static uint8_t initMask = 0;
 #endif
 
 void TwoWireInit(bool useInterrupts, uint8_t initialAddress, uint8_t initialMask) {
-	initAddress = initialAddress;
-	initMask = initialMask;
+  initAddress = initialAddress;
+  initMask = initialMask;
 
-	TwoWireResetDeviceAddress();
-	TWSCRB = _BV(TWHNM);
+  TwoWireResetDeviceAddress();
+  TWSCRB = _BV(TWHNM);
 
-	// Enable Data Interrupt, Address/Stop Interrupt, Two-Wire Interface, Stop Interrpt
-	TWSCRA = _BV(TWEN) | _BV(TWSIE);
+  // Enable Data Interrupt, Address/Stop Interrupt, Two-Wire Interface, Stop Interrpt
+  TWSCRA = _BV(TWEN) | _BV(TWSIE);
 
-	if (useInterrupts) {
-		TWSCRA |= _BV(TWDIE) | _BV(TWASIE) ;
-	}
+  if (useInterrupts) {
+    TWSCRA |= _BV(TWDIE) | _BV(TWASIE) ;
+  }
 }
 
 void TwoWireDeinit() {
-	TWSCRA = TWSCRB = TWSA = TWSAM = TWSD = 0;
-	TWSSRA = _BV(TWDIF) | _BV(TWASIF) | _BV(TWC);
+  TWSCRA = TWSCRB = TWSA = TWSAM = TWSD = 0;
+  TWSSRA = _BV(TWDIF) | _BV(TWASIF) | _BV(TWC);
 }
 
 void TwoWireSetDeviceAddress(uint8_t address) {
-	TWSA = (address << 1) | 1;
-	TWSAM = 0;
+  TWSA = (address << 1) | 1;
+  TWSAM = 0;
 }
 
 void TwoWireResetDeviceAddress() {
-	// Set address and mask to listen for a range of addresses, and
-	// enable general call (address 0) recognition by setting TWSA0.
-	TWSA = (initAddress << 1) | 1;
-	TWSAM = (initMask << 1);
+  // Set address and mask to listen for a range of addresses, and
+  // enable general call (address 0) recognition by setting TWSA0.
+  TWSA = (initAddress << 1) | 1;
+  TWSAM = (initMask << 1);
 }
 
 static void _Acknowledge(bool ack, bool complete=false) {
-	if (ack) {
-		TWSCRB &= ~_BV(TWAA);
-	} else {
-		TWSCRB |= _BV(TWAA);
-	}
+  if (ack) {
+    TWSCRB &= ~_BV(TWAA);
+  } else {
+    TWSCRB |= _BV(TWAA);
+  }
 
-	TWSCRB |= _BV(TWCMD1) | (complete ? 0 : _BV(TWCMD0));
+  TWSCRB |= _BV(TWCMD1) | (complete ? 0 : _BV(TWCMD0));
 }
 
 
@@ -78,84 +78,82 @@ static uint8_t twiReadPos = 0;
 static uint8_t twiAddress = 0;
 
 enum TWIState {
-	TWIStateIdle,
-	TWIStateRead,
-	TWIStateWrite
+  TWIStateIdle,
+  TWIStateRead,
+  TWIStateWrite
 };
 
 static TWIState twiState = TWIStateIdle;
 
-
-
 void TwoWireUpdate() {
-	uint8_t status = TWSSRA;
-	bool dataInterruptFlag = (status & _BV(TWDIF)); // Check whether the data interrupt flag is set
-	bool isAddressOrStop = (status & _BV(TWASIF)); // Get the TWI Address/Stop Interrupt Flag
-	bool isReadOperation = (status & _BV(TWDIR));
-	bool addressReceived = (status & _BV(TWAS)); // Check if we received an address and not a stop
+  uint8_t status = TWSSRA;
+  bool dataInterruptFlag = (status & _BV(TWDIF)); // Check whether the data interrupt flag is set
+  bool isAddressOrStop = (status & _BV(TWASIF)); // Get the TWI Address/Stop Interrupt Flag
+  bool isReadOperation = (status & _BV(TWDIR));
+  bool addressReceived = (status & _BV(TWAS)); // Check if we received an address and not a stop
 
-	// Clear the interrupt flags
-	// TWSSRA |= _BV(TWDIF) | _BV(TWASIF);
+  // Clear the interrupt flags
+  // TWSSRA |= _BV(TWDIF) | _BV(TWASIF);
 
-	//volatile bool clockHold = (TWSSRA & _BV(TWCH));
-	//volatile bool receiveAck = (TWSSRA & _BV(TWRA));
-	//volatile bool collision = (TWSSRA & _BV(TWC));
-	//volatile bool busError = (TWSSRA & _BV(TWBE));
+  //volatile bool clockHold = (TWSSRA & _BV(TWCH));
+  //volatile bool receiveAck = (TWSSRA & _BV(TWRA));
+  //volatile bool collision = (TWSSRA & _BV(TWC));
+  //volatile bool busError = (TWSSRA & _BV(TWBE));
 
-	// Handle address received and stop conditions
-	if (isAddressOrStop) {
-		// If we were previously in a write, then execute the callback and setup for a read.
-		if ((twiState == TWIStateWrite) and twiBufferLen != 0) {
-			twiBufferLen = TwoWireCallback(twiAddress, twiBuffer, twiBufferLen, TWI_BUFFER_SIZE);
-		}
+  // Handle address received and stop conditions
+  if (isAddressOrStop) {
+    // If we were previously in a write, then execute the callback and setup for a read.
+    if ((twiState == TWIStateWrite) and twiBufferLen != 0) {
+      twiBufferLen = TwoWireCallback(twiAddress, twiBuffer, twiBufferLen, TWI_BUFFER_SIZE);
+    }
 
-		// Send an ack unless a read is starting and there are no bytes to read.
-		bool ack = (twiBufferLen > 0) or (!isReadOperation) or (!addressReceived);
-		_Acknowledge(ack, !addressReceived /*complete*/);
+    // Send an ack unless a read is starting and there are no bytes to read.
+    bool ack = (twiBufferLen > 0) or (!isReadOperation) or (!addressReceived);
+    _Acknowledge(ack, !addressReceived /*complete*/);
 
-		if (!addressReceived) {
-			twiState = TWIStateIdle;
-		} else if (isReadOperation) {
-			twiState = TWIStateRead;
-			twiReadPos = 0;
-		} else {
-			twiState = TWIStateWrite;
-			twiBufferLen = 0;
-		}
+    if (!addressReceived) {
+      twiState = TWIStateIdle;
+    } else if (isReadOperation) {
+      twiState = TWIStateRead;
+      twiReadPos = 0;
+    } else {
+      twiState = TWIStateWrite;
+      twiBufferLen = 0;
+    }
 
-		// The address is in the high 7 bits, the RD/WR bit is in the lsb
-		twiAddress = TWSD >> 1;
-		return;
-	}
+    // The address is in the high 7 bits, the RD/WR bit is in the lsb
+    twiAddress = TWSD >> 1;
+    return;
+  }
 
-	// Data Read
-	if (dataInterruptFlag and isReadOperation) {
-		if (twiReadPos < twiBufferLen) {
-			TWSD = twiBuffer[twiReadPos++];
-			_Acknowledge(true /*ack*/, false /*complete*/);
-		} else {
-			TWSD = 0;
-			_Acknowledge(false /*ack*/, true /*complete*/);
-		}
-		return;
-	}
+  // Data Read
+  if (dataInterruptFlag and isReadOperation) {
+    if (twiReadPos < twiBufferLen) {
+      TWSD = twiBuffer[twiReadPos++];
+      _Acknowledge(true /*ack*/, false /*complete*/);
+    } else {
+      TWSD = 0;
+      _Acknowledge(false /*ack*/, true /*complete*/);
+    }
+    return;
+  }
 
-	// Data Write
-	if (dataInterruptFlag and !isReadOperation) {
-		uint8_t data = TWSD;
-		_Acknowledge(true, false);
+  // Data Write
+  if (dataInterruptFlag and !isReadOperation) {
+    uint8_t data = TWSD;
+    _Acknowledge(true, false);
 
-		if (twiBufferLen < TWI_BUFFER_SIZE) {
-			twiBuffer[twiBufferLen++] = data;
-		}
-		return;
-	}
+    if (twiBufferLen < TWI_BUFFER_SIZE) {
+      twiBuffer[twiBufferLen++] = data;
+    }
+    return;
+  }
 }
 
 // The two wire interrupt service routine
 ISR(TWI_SLAVE_vect)
 {
-	TwoWireUpdate();
+  TwoWireUpdate();
 }
 
 #endif
