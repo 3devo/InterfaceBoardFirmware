@@ -146,16 +146,23 @@ class ButtonEncoder {
 template <uint8_t button_pin, uint8_t pina, uint8_t pinb>
 inline void ButtonEncoder<button_pin, pina, pinb>::button_isr(void) {
   static bool previous_state = true;
+  static uint32_t prev_edge_time = 0;
 
-  // No need to debounce, since hardware filtering is used
-  bool button_state = digitalRead(button_pin);
-
-  // Falling edge detection
-  if(previous_state && !button_state) {
-    button_presses++;
-    assert_interrupt_pin();
+  if (digitalRead(button_pin) == previous_state)
+    return;
+  
+  uint32_t now = micros();
+  // Debounce is needed, even with hardware debounce filter some bouncing still
+  // happens (probably due to noise when the filter is at an indeterminate voltage).
+  if ((now - prev_edge_time) > DEBOUNCE_TIME_US) {
+    // Falling edge detection
+    if (previous_state) {
+      button_presses++;
+      assert_interrupt_pin();
+    }
   }
-  previous_state = button_state;
+  prev_edge_time = now;
+  previous_state = !previous_state;
 }
 
 template <uint8_t button_pin, uint8_t pina, uint8_t pinb>

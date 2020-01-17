@@ -31,6 +31,9 @@ static const uint8_t RES_Display = PIN_B0;
 static const uint8_t ENC_B = PIN_B1;
 static const uint8_t ENC_A = PIN_B2;
 static const uint8_t ENC_SW = PIN_A5;
+// Debouncing the encoder switch for a certain time, since the Schmitt-trigger on
+// `ENC_SW` is not enough to debounce or is not available at all.
+static const uint16_t DEBOUNCE_TIME_US = 5000; // us
 
 static const uint8_t SCL = PIN_A4;
 static const uint8_t SDA = PIN_A6;
