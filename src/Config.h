@@ -1,6 +1,5 @@
-#pragma once
 /*
- * Copyright (C) 2017 3devo (http://3devo.eu)
+ * Copyright (C) 2017 3devo (http://www.3devo.eu)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,6 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+#ifndef CONFIG_H_
+#define CONFIG_H_
 
 #include "Arduino.h"
 
@@ -44,4 +46,17 @@ static const bool LED_OFF = LOW;
 static const bool HOPPER_FULL = HIGH;
 static const bool HOPPER_EMPTY = LOW;
 
-static const uint8_t I2C_ADDRESS = 8;
+// Used for SET_ADDRESS, just use 0 to only respond to the
+// wildcard type.
+const uint8_t INFO_HW_TYPE = 0;
+
+// By default, listen to addresses 8 only
+const uint8_t INITIAL_ADDRESS = 0x08;
+const uint8_t INITIAL_BITS = 7;
+
+const uint8_t PROTOCOL_VERSION = 0x0101;
+
+#define TWOWIRE_USE_INTERRUPTS
+#define USE_I2C
+
+#endif /* CONFIG_H_ */

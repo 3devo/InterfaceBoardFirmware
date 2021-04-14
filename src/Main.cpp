@@ -15,9 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Hardware.h"
+#include "Config.h"
 #include "Arduino.h"
-#include "TwoWire.h"
+#include "Bus.h"
 #include "BaseProtocol.h"
 #include <util/atomic.h>
 #include "ButtonEncoder.h"
@@ -157,7 +157,7 @@ void setup() {
   pinMode(H_Sens, INPUT);
 #endif
 
-  TwoWireInit(/* useInterrupts */ true, I2C_ADDRESS);
+  BusInit(INITIAL_ADDRESS, INITIAL_BITS);
 
   encoder.setup();
 

@@ -2,7 +2,7 @@
 
 #include "util/atomic.h"
 #include "Arduino.h"
-#include "Hardware.h"
+#include "Config.h"
 
 /**
  * This class handles events from a rotary encoder with a combined

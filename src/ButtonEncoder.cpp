@@ -1,6 +1,5 @@
 #include "ButtonEncoder.h"
 #include "Arduino.h"
-#include "Hardware.h"
 
 template <>
 volatile int8_t ButtonEncoder<ENC_SW, ENC_A, ENC_B>::encoder_detents = 0;
