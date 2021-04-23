@@ -54,7 +54,7 @@ const uint8_t INFO_HW_TYPE = 0;
 const uint8_t INITIAL_ADDRESS = 0x08;
 const uint8_t INITIAL_BITS = 7;
 
-const uint8_t PROTOCOL_VERSION = 0x0101;
+const uint8_t PROTOCOL_VERSION = 0x0000;
 
 #define TWOWIRE_USE_INTERRUPTS
 #define USE_I2C
