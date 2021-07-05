@@ -37,11 +37,11 @@ struct Commands {
 };
 
 void assert_interrupt_pin() {
-  digitalWrite(STATUS_PIN, HIGH);
+  digitalWrite(STATUS_PIN, LOW);
 }
 
 void clear_interrupt_pin() {
-  digitalWrite(STATUS_PIN, LOW);
+  digitalWrite(STATUS_PIN, HIGH);
 }
 
 cmd_result processCommand(uint8_t cmd, uint8_t * /*datain*/, uint8_t len, uint8_t *dataout, uint8_t maxLen) {
@@ -152,6 +152,7 @@ void setup() {
   pinMode(H_Led, OUTPUT);
 
   pinMode(STATUS_PIN, OUTPUT);
+  clear_interrupt_pin();
 
 #ifndef ENABLE_SERIAL // Serial reuses the H_sens pin
   pinMode(H_Sens, INPUT);
