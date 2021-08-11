@@ -9,3 +9,6 @@ Release
 *.o
 *.d
 build
+sketch.json
+arduino-cli.yaml
+compile_commands.json
