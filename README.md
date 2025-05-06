@@ -16,7 +16,7 @@ select "3devo Interfaceboard" in the IDE and compile the firmware.
 
 A compiled version of this firmware is normally included in the Filament
 Extruder's main firmware, and uploaded on every startup through a
-[bootloader](https://github.com/3devo/AtTinyBootloader) running on the
+[bootloader](https://github.com/3devo/ChildbusBootloader) running on the
 microcontroller.
 
 License
